@@ -79,10 +79,29 @@ async def predict_mood_and_suggestions(entry: MoodEntry):
         emotion_scores = {}
         if entry.journal:
             emotions = emotion_model(entry.journal)
-            emotion_scores = {emotion['label']: emotion['score'] for emotion in emotions}
-        
+            emotion_scores = {emotion['label']: emotion['score'] for emotion in emotions[0]}
+
+        # Determine mood from emotion scores if not provided
+        determined_mood = entry.mood
+        if not determined_mood and emotion_scores:
+            # Get dominant emotion (highest score)
+            dominant_emotion = max(emotion_scores, key=emotion_scores.get)
+
+            # Map emotion to mood category
+            emotion_to_mood_map = {
+                'joy': 'excellent', 'love': 'excellent', 'gratitude': 'excellent', 'excitement': 'excellent',
+                'admiration': 'good', 'amusement': 'good', 'approval': 'good', 'caring': 'good',
+                'desire': 'good', 'optimism': 'good', 'pride': 'good', 'relief': 'good',
+                'curiosity': 'okay', 'surprise': 'okay', 'realization': 'okay', 'neutral': 'okay',
+                'fear': 'struggling', 'nervousness': 'struggling', 'sadness': 'struggling',
+                'disappointment': 'struggling', 'confusion': 'struggling', 'embarrassment': 'struggling',
+                'anger': 'difficult', 'annoyance': 'difficult', 'disgust': 'difficult',
+                'grief': 'difficult', 'remorse': 'difficult'
+            }
+            determined_mood = emotion_to_mood_map.get(dominant_emotion, 'okay')
+
         # Get personalized coping suggestions
-        suggestions = get_coping_suggestions(entry.mood, entry.user_id)
+        suggestions = get_coping_suggestions(determined_mood, entry.user_id)
         
         # Store in Firestore
         doc_ref = db.collection('mood_entries').add({
