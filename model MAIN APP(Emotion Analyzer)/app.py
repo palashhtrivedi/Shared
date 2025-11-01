@@ -36,7 +36,7 @@ emotion_model = pipeline(
 
 # Data models
 class MoodEntry(BaseModel):
-    mood: str
+    mood: Optional[str] = None
     journal: Optional[str] = ""
     timestamp: datetime = datetime.now()
     user_id: str
