@@ -106,14 +106,14 @@ async def predict_mood_and_suggestions(entry: MoodEntry):
         # Store in Firestore
         doc_ref = db.collection('mood_entries').add({
             'user_id': entry.user_id,
-            'mood': entry.mood,
+            'mood': determined_mood,
             'journal': entry.journal,
             'timestamp': entry.timestamp,
             'emotion_scores': emotion_scores
         })
-        
+
         return {
-            "mood": entry.mood,
+            "mood": determined_mood,
             "emotion_analysis": emotion_scores,
             "coping_suggestions": suggestions,
             "entry_id": doc_ref[1].id
